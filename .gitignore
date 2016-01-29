@@ -7,3 +7,4 @@ __vm/
 *.sln
 *.vcxproj.filters
 *.vcxproj
+*.user
