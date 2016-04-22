@@ -1,7 +1,7 @@
+#include <TimeLib.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include "DS3231.h"
-
 
 #define I2C_SDA 2
 #define I2C_SCL 4
@@ -21,6 +21,10 @@ void setup()
 	//rtc.clearEOSC();
 	//rtc.setDateTimeString(__DATE__, __TIME__);	// Set to when the compiler created the binary
 
+	setTime(rtc.getUnixTime(rtc.getTime()));
+	if (timeStatus() != timeSet)
+		Serial.println("Unable to sync with the RTC");
+
 	pinMode(PIN_LED, OUTPUT);
 	pinMode(PIN_BTN, INPUT_PULLUP);
 
@@ -30,17 +34,15 @@ void setup()
 	}
 	else
 	{
-		lLastActivity = rtc.getUnixTime(rtc.getTime());
+		lLastActivity = now();
 	}
 	Serial.printf("%s | %s\n", rtc.getDateStr().c_str(), rtc.getTimeStr().c_str());
 }
 
 // the loop function runs over and over again until power down or reset
-long lNow;
 void loop() 
 {
-	lNow = rtc.getUnixTime(rtc.getTime());
-	if (lNow - lLastActivity > 30)
+	if (now() - lLastActivity > 30)
 	{
 		Serial.println("Sleeping for 5 seconds...");
 		digitalWrite(PIN_LED, LOW);
@@ -52,7 +54,7 @@ void loop()
 
 	if (digitalRead(PIN_BTN) == LOW)	// The button can reset the 30s timer as well
 	{
-		lLastActivity = rtc.getUnixTime(rtc.getTime());
+		lLastActivity = now();
 	}
 
 	delay(10);

@@ -4,6 +4,7 @@
 
 #include "DS3231.h"
 #include <Wire\Wire.h>
+#include <TimeLib.h>
 
 #define REG_SEC		0x00
 #define REG_MIN		0x01
@@ -25,8 +26,8 @@ static const uint8_t dim[] = { 31,28,31,30,31,30,31,31,30,31,30,31 };
 Time::Time()
 {
 	this->year = 2014;
-	this->mon = 1;
-	this->date = 1;
+	this->month = 1;
+	this->day = 1;
 	this->hour = 0;
 	this->min = 0;
 	this->sec = 0;
@@ -92,8 +93,8 @@ Time DS3231::getTime()
 		t.min = _decode(Wire.read());
 		t.hour = _decodeH(Wire.read());
 		t.dow = Wire.read();
-		t.date = _decode(Wire.read());
-		t.mon = _decode(Wire.read());
+		t.day = _decode(Wire.read());
+		t.month = _decode(Wire.read());
 		t.year = _decodeY(Wire.read()) + 2000;
 	}
 	while (Wire.available())
@@ -134,14 +135,14 @@ void DS3231::setDateTimeString(String compDate, String compTime)
 	setTime(hour, min, sec);
 }
 
-void DS3231::setDate(uint16_t year, uint8_t mon, uint8_t date)
+void DS3231::setDate(uint16_t year, uint8_t month, uint8_t day)
 {
-	if (((date > 0) && (date <= 31)) && ((mon > 0) && (mon <= 12)) && ((year >= 2000) && (year < 3000)))
+	if (((day > 0) && (day <= 31)) && ((month > 0) && (month <= 12)) && ((year >= 2000) && (year < 3000)))
 	{
 		year -= 2000;
 		_writeRegister(REG_YEAR, _encode(year));
-		_writeRegister(REG_MON, _encode(mon));
-		_writeRegister(REG_DATE, _encode(date));
+		_writeRegister(REG_MON, _encode(month));
+		_writeRegister(REG_DATE, _encode(day));
 	}
 }
 // Untested automatic calculation
@@ -153,9 +154,9 @@ void DS3231::setDOW()
 
 	dow = (_t.year % 100);
 	dow = dow*1.25;
-	dow += _t.date;
-	dow += mArr[_t.mon - 1];
-	if (((_t.year % 4) == 0) && (_t.mon < 3))
+	dow += _t.day;
+	dow += mArr[_t.month - 1];
+	if (((_t.year % 4) == 0) && (_t.month < 3))
 		dow -= 1;
 	while (dow > 7)
 		dow -= 7;
@@ -208,17 +209,17 @@ String DS3231::getDateStr(uint8_t slformat, uint8_t eformat, char divider)
 	switch (eformat)
 	{
 	case FORMAT_LITTLEENDIAN:
-		if (t.date < 10)
+		if (t.day < 10)
 			output[0] = 48;
 		else
-			output[0] = char((t.date / 10) + 48);
-		output[1] = char((t.date % 10) + 48);
+			output[0] = char((t.day / 10) + 48);
+		output[1] = char((t.day % 10) + 48);
 		output[2] = divider;
-		if (t.mon < 10)
+		if (t.month < 10)
 			output[3] = 48;
 		else
-			output[3] = char((t.mon / 10) + 48);
-		output[4] = char((t.mon % 10) + 48);
+			output[3] = char((t.month / 10) + 48);
+		output[4] = char((t.month % 10) + 48);
 		output[5] = divider;
 		if (slformat == FORMAT_SHORT)
 		{
@@ -264,31 +265,31 @@ String DS3231::getDateStr(uint8_t slformat, uint8_t eformat, char divider)
 			output[3] = char((yr % 10) + 48);
 			output[4] = divider;
 		}
-		if (t.mon < 10)
+		if (t.month < 10)
 			output[3 + offset] = 48;
 		else
-			output[3 + offset] = char((t.mon / 10) + 48);
-		output[4 + offset] = char((t.mon % 10) + 48);
+			output[3 + offset] = char((t.month / 10) + 48);
+		output[4 + offset] = char((t.month % 10) + 48);
 		output[5 + offset] = divider;
-		if (t.date < 10)
+		if (t.day < 10)
 			output[6 + offset] = 48;
 		else
-			output[6 + offset] = char((t.date / 10) + 48);
-		output[7 + offset] = char((t.date % 10) + 48);
+			output[6 + offset] = char((t.day / 10) + 48);
+		output[7 + offset] = char((t.day % 10) + 48);
 		output[8 + offset] = 0;
 		break;
 	case FORMAT_MIDDLEENDIAN:
-		if (t.mon < 10)
+		if (t.month < 10)
 			output[0] = 48;
 		else
-			output[0] = char((t.mon / 10) + 48);
-		output[1] = char((t.mon % 10) + 48);
+			output[0] = char((t.month / 10) + 48);
+		output[1] = char((t.month % 10) + 48);
 		output[2] = divider;
-		if (t.date < 10)
+		if (t.day < 10)
 			output[3] = 48;
 		else
-			output[3] = char((t.date / 10) + 48);
-		output[4] = char((t.date % 10) + 48);
+			output[3] = char((t.day / 10) + 48);
+		output[4] = char((t.day % 10) + 48);
 		output[5] = divider;
 		if (slformat == FORMAT_SHORT)
 		{
@@ -336,9 +337,9 @@ String DS3231::getMonthStr(uint8_t format)
 	Time t;
 	t = getTime();
 	if (format == FORMAT_SHORT)
-		output = monthShort[t.mon - 1];
+		output = monthShort[t.month - 1];
 	else
-		output = monthLong[t.mon - 1];
+		output = monthLong[t.month - 1];
 	return output;
 }
 
@@ -346,15 +347,28 @@ long DS3231::getUnixTime(Time t)
 {
 	uint16_t	dc;
 
-	dc = t.date;
-	for (uint8_t i = 0; i < (t.mon - 1); i++)
+	dc = t.day;
+	for (uint8_t i = 0; i < (t.month - 1); i++)
 		dc += dim[i];
-	if ((t.mon > 2) && (((t.year - 2000) % 4) == 0))
+	if ((t.month > 2) && (((t.year - 2000) % 4) == 0))
 		++dc;
 	dc = dc + (365 * (t.year - 2000)) + (((t.year - 2000) + 3) / 4) - 1;
 
 	return ((((((dc * 24L) + t.hour) * 60) + t.min) * 60) + t.sec) + SEC_1970_TO_2000;
 
+}
+
+Time DS3231::setUnixTime(long unixEpoch)
+{
+	Time t = Time();
+	t.year = year(unixEpoch);
+	t.month = month(unixEpoch);
+	t.day = day(unixEpoch);
+	t.hour = hour(unixEpoch);
+	t.min = minute(unixEpoch);
+	t.sec = second(unixEpoch);
+
+	return t;
 }
 
 uint8_t	DS3231::_decode(uint8_t value)

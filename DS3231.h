@@ -35,8 +35,8 @@ public:
 	uint8_t		hour;
 	uint8_t		min;
 	uint8_t		sec;
-	uint8_t		date;
-	uint8_t		mon;
+	uint8_t		day;
+	uint8_t		month;
 	uint16_t	year;
 	uint8_t		dow;
 
@@ -52,7 +52,7 @@ public:
 	Time	getTime();
 	void	setTime(uint8_t hour, uint8_t min, uint8_t sec);
 	void	setDateTimeString(String compDate, String compTime);
-	void	setDate(uint16_t year, uint8_t mon, uint8_t date);
+	void	setDate(uint16_t year, uint8_t month, uint8_t day);
 	void	setDOW();
 	void	setDOW(uint8_t dow);
 
@@ -61,6 +61,7 @@ public:
 	String	getDOWStr(uint8_t format = FORMAT_LONG);
 	String	getMonthStr(uint8_t format = FORMAT_LONG);
 	long	getUnixTime(Time t);
+	Time	setUnixTime(long unixEpoch);
 
 
 private:
