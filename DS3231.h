@@ -9,7 +9,7 @@
 #include "WProgram.h"
 #endif
 
-#include <Wire.h>
+#include <Wire\Wire.h>
 
 #define DS3231_ADDR		0x68
 

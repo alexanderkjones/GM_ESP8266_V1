@@ -3,7 +3,7 @@
 // 
 
 #include "DS3231.h"
-#include <Wire.h>
+#include <Wire\Wire.h>
 
 #define REG_SEC		0x00
 #define REG_MIN		0x01
