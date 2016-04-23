@@ -1,3 +1,4 @@
+#include "AT24C32Helper.h"
 #include <TimeLib.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
@@ -10,16 +11,18 @@
 #define SEC 1000000
 
 DS3231 rtc(I2C_SDA, I2C_SCL);
+AT24C32Helper eeprom = AT24C32Helper();
 long lLastActivity;
 
 // the setup function runs once when you press reset or power the board
-void setup() 
+void setup()
 {
 	Serial.begin(9600);
 
 	rtc.begin();
 	//rtc.clearEOSC();
-	//rtc.setDateTimeString(__DATE__, __TIME__);	// Set to when the compiler created the binary
+	if (rtc.getTime().year == 2000)
+		rtc.setDateTimeString(__DATE__, __TIME__);	// Set to when the compiler created the binary
 
 	setTime(rtc.getUnixTime(rtc.getTime()));
 	if (timeStatus() != timeSet)
@@ -36,11 +39,19 @@ void setup()
 	{
 		lLastActivity = now();
 	}
-	Serial.printf("%s | %s\n", rtc.getDateStr().c_str(), rtc.getTimeStr().c_str());
+	Serial.printf("\n%s | %s\n", rtc.getDateStr().c_str(), rtc.getTimeStr().c_str());
+	eeprom.begin(I2C_SDA, I2C_SCL);
+	Serial.println(eeprom.ReadStringExact(0, 26));
+
+	eeprom.WriteInt(30, 256);
+	Serial.println(eeprom.ReadInt(30));
+
+	eeprom.WriteLong(32, now());
+	Serial.println(eeprom.ReadLong(32));
 }
 
 // the loop function runs over and over again until power down or reset
-void loop() 
+void loop()
 {
 	if (now() - lLastActivity > 30)
 	{
