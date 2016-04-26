@@ -45,11 +45,11 @@ String AT24C32Helper::ReadString(int addr)
 	return str;
 }
 // Read a string from an address with an exact length
-String AT24C32Helper::ReadStringExact(int addr, int buff) {
+String AT24C32Helper::ReadStringExact(int addr, int len) {
 
 	String str = "";
 
-	for (int i = addr; i < addr + buff; ++i)
+	for (int i = addr; i < addr + len; ++i)
 	{
 		byte val = i2c_eeprom_read_byte(deviceAddr, i);
 
@@ -83,15 +83,15 @@ void AT24C32Helper::WriteStringExact(int addr, String val, int maxLen) {
 
 
 // Read two bytes at an address as INT16
-int AT24C32Helper::ReadInt(int addr)
+signed short AT24C32Helper::ReadInt(int addr)
 {
 	byte lowByte = i2c_eeprom_read_byte(deviceAddr, addr);
 	byte highByte = i2c_eeprom_read_byte(deviceAddr, addr+1);
 
-	return ((lowByte << 0) & 0xFF) + ((highByte << 8) & 0xFF00);
+	return (signed short)(((lowByte << 0) & 0xFF) + ((highByte << 8) & 0xFF00));
 }
 // Write two bytes at an address from an INT16
-void AT24C32Helper::WriteInt(int addr, int value)
+void AT24C32Helper::WriteInt(int addr, signed short value)
 {
 	byte lowByte = ((value >> 0) & 0xFF);
 	byte highByte = ((value >> 8) & 0xFF);

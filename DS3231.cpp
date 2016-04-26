@@ -116,7 +116,7 @@ void DS3231::setTime(uint8_t hour, uint8_t min, uint8_t sec)
 const String months[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
 // sample input: date = "Dec 26 2009", time = "12:34:56"
-void DS3231::setDateTimeString(String compDate, String compTime)
+void DS3231::setDateTime(String compDate, String compTime)
 {
 	int month = 1;
 	for (int i = 1; i <= 12; i++)
@@ -171,9 +171,12 @@ void DS3231::setDOW(uint8_t dow)
 
 String DS3231::getTimeStr(uint8_t format)
 {
+	return getTimeStr(getTime());
+}
+
+String DS3231::getTimeStr(Time t, uint8_t format)
+{
 	String output = "xxxxxxxx";
-	Time t;
-	t = getTime();
 	if (t.hour < 10)
 		output[0] = 48;
 	else
@@ -202,10 +205,13 @@ String DS3231::getTimeStr(uint8_t format)
 
 String DS3231::getDateStr(uint8_t slformat, uint8_t eformat, char divider)
 {
+	return getDateStr(getTime());
+}
+
+String DS3231::getDateStr(Time t, uint8_t slformat, uint8_t eformat, char divider)
+{
 	String output = "xxxxxxxxxx";
 	int yr, offset;
-	Time t;
-	t = getTime();
 	switch (eformat)
 	{
 	case FORMAT_LITTLEENDIAN:
@@ -358,7 +364,7 @@ long DS3231::getUnixTime(Time t)
 
 }
 
-Time DS3231::setUnixTime(long unixEpoch)
+Time DS3231::getTime(long unixEpoch)
 {
 	Time t = Time();
 	t.year = year(unixEpoch);
@@ -368,6 +374,31 @@ Time DS3231::setUnixTime(long unixEpoch)
 	t.min = minute(unixEpoch);
 	t.sec = second(unixEpoch);
 
+	return t;
+}
+
+Time DS3231::getTime(String compDate, String compTime)
+{
+	int month = 1;
+	for (int i = 1; i <= 12; i++)
+	{
+		if (months[i - 1] == compDate.substring(0, 3))
+			month = i;
+	}
+	int day = compDate.substring(4, 6).toInt();
+	int year = compDate.substring(7, 11).toInt();
+
+	int hour = compTime.substring(0, 2).toInt();
+	int min = compTime.substring(3, 5).toInt();
+	int sec = compTime.substring(6, 8).toInt();
+
+	Time t = Time();
+	t.year = year;
+	t.month = month;
+	t.day = day;
+	t.hour = hour;
+	t.min = min;
+	t.sec = sec;
 	return t;
 }
 

@@ -22,8 +22,8 @@ public:
 	void WriteString(int addr, String val, int maxLen, bool ExcludeTermination);
 	void WriteString(int addr, String val, int maxLen);
 	void WriteStringExact(int addr, String val, int maxLen);
-	int ReadInt(int p_address);
-	void WriteInt(int address, int value);
+	signed short ReadInt(int addr);
+	void WriteInt(int addr, signed short value);
 	long ReadLong(int addr);
 	void WriteLong(int addr, long value);
 

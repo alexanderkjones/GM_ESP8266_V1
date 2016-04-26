@@ -49,17 +49,20 @@ public:
 	void	clearEOSC();
 	Time	getTime();
 	void	setTime(uint8_t hour, uint8_t min, uint8_t sec);
-	void	setDateTimeString(String compDate, String compTime);
+	void	setDateTime(String compDate, String compTime);
 	void	setDate(uint16_t year, uint8_t month, uint8_t day);
 	void	setDOW();
 	void	setDOW(uint8_t dow);
 
 	String	getTimeStr(uint8_t format = FORMAT_LONG);
+	String	getTimeStr(Time t, uint8_t format = FORMAT_LONG);
 	String	getDateStr(uint8_t slformat = FORMAT_LONG, uint8_t eformat = FORMAT_BIGENDIAN, char divider = '-');
+	String	getDateStr(Time t, uint8_t slformat = FORMAT_LONG, uint8_t eformat = FORMAT_BIGENDIAN, char divider = '-');
 	String	getDOWStr(uint8_t format = FORMAT_LONG);
 	String	getMonthStr(uint8_t format = FORMAT_LONG);
 	long	getUnixTime(Time t);
-	Time	setUnixTime(long unixEpoch);
+	Time	getTime(long unixEpoch);
+	Time	getTime(String compDate, String compTime);
 
 
 private:
