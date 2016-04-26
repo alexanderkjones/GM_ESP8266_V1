@@ -24,8 +24,8 @@ void setup()
 
 	rtc.begin();
 	//rtc.clearEOSC();
-	long tRtc = rtc.getUnixTime(rtc.getTime());
-	long tComp = rtc.getUnixTime(rtc.getTime(__DATE__, __TIME__));
+	int tRtc = rtc.getUnixTime(rtc.getTime());
+	int tComp = rtc.getUnixTime(rtc.getTime(__DATE__, __TIME__));
 	if (tComp > tRtc)
 	{
 		rtc.setDateTime(__DATE__, __TIME__);	// Set to when the compiler created the binary

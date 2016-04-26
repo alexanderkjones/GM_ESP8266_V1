@@ -22,10 +22,10 @@ public:
 	void WriteString(int addr, String val, int maxLen, bool ExcludeTermination);
 	void WriteString(int addr, String val, int maxLen);
 	void WriteStringExact(int addr, String val, int maxLen);
-	signed short ReadInt(int addr);
-	void WriteInt(int addr, signed short value);
-	long ReadLong(int addr);
-	void WriteLong(int addr, long value);
+	short ReadInt16(int addr);
+	void WriteInt16(int addr, short value);
+	int ReadInt32(int addr);
+	void WriteInt32(int addr, int value);
 
 private:
 	void i2c_eeprom_write_byte(int deviceaddress, unsigned int eeaddress, byte data);

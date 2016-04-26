@@ -1,3 +1,5 @@
+void MaintainWifi();
+
 #define REMOTEAPSTATUS_INIT				0
 #define REMOTEAPSTATUS_DONTCONNECT		1
 #define REMOTEAPSTATUS_CONNECTEDONCE	2
@@ -31,11 +33,11 @@ void eepromSsid(String Ssid) { eeprom.WriteString(1, Ssid, 33); }
 String eepromPass() { return eeprom.ReadString(34); }
 void eepromPass(String Pass) { eeprom.WriteString(34, Pass, 65); }
 //	99		4		Last Remote AP connection
-long eepromLastApConnectTime() { return eeprom.ReadLong(99); }
-void eepromLastApConnectTime(long UnixTime) { eeprom.WriteLong(99, UnixTime); }
+int eepromLastApConnectTime() { return eeprom.ReadInt32(99); }
+void eepromLastApConnectTime(int UnixTime) { eeprom.WriteInt32(99, UnixTime); }
 //	103		2		Last Remote AP RSSI
-int eepromLastApRssi() { return eeprom.ReadInt(103); }
-void eepromLastApRssi(int Rssi) { eeprom.WriteInt(103, Rssi); }
+short eepromLastApRssi() { return eeprom.ReadInt16(103); }
+void eepromLastApRssi(short Rssi) { eeprom.WriteInt16(103, Rssi); }
 //	105
 //////////////////////////////////////////////
 
@@ -74,8 +76,16 @@ void handleRoot()
 
 
 	Time t = rtc.getTime(eepromLastApConnectTime());
-	String content = "<h1>Your Wifi Settings</h1>";
+	short rssi = eepromLastApRssi();
+	String rssiQuality = "Poor";
+	if (rssi > -80)
+		rssiQuality = "Fair";
+	if (rssi > -65)
+		rssiQuality = "Good";
+	if (rssi > -50)
+		rssiQuality = "Excellent";
 
+	String content = "<h1>Your Wifi Settings</h1>";
 
 	if (eepromAutoConnect() == "1")
 	{
@@ -83,20 +93,20 @@ void handleRoot()
 		{
 			content += "<p>You are currently configured to connect to <b>" + eepromSsid() + "</b></p>";
 			content += "<p>Your last successful connection was at " + rtc.getDateStr(t) + " " + rtc.getTimeStr(t) + "</p>";
-			content += "<p>Your router's connection strength was " + String(eepromLastApRssi()) + "</p>";
+			content += "<p>Your router's connection strength was " + rssiQuality + " (" + String(rssi) + " dBm)</p>";
 		}
 		else
 		{
 			content += "<p>You are currently configured to connect to <b>" + eepromSsid() + "</b></p>";
 			content += "<p>Your device has not connected to since <span style='color:#D8000C; font-weight:bold;'> " + rtc.getDateStr(t) + " " + rtc.getTimeStr(t) + "</span></p>";
-			content += "<p>Your router's connection strength was " + String(eepromLastApRssi()) + "</p>";
+			content += "<p>Your router's connection strength was " + rssiQuality + " (" + String(rssi) + " dBm)</p>";
 		}
 	}
 	else
 	{
 		content += "<p>You are not currently configured to connect to a remote WiFi Access Point</p>";
 	}
-	
+
 	content += "<h2>To Reconfigure, Enter a new Wifi Router Name and Password<h2>";
 	content += "<form action='/' method='POST'>Router Name: <br><input type='text' name='SSID'><br>";
 	content += "Password: <br><input type='text' name='PASS'><br>";
@@ -117,12 +127,13 @@ void LocalApLoop()
 		webServer.begin();
 		Serial.println("Web server started...");
 		localApStatus = LOCALAPSTATUS_STARTED;
+		remoteApSuccess = REMOTEAPSUCCESS_INIT;
 		if (eepromAutoConnect() != "1")
 			remoteApSuccess = REMOTEAPSUCCESS_FAILED;
 		break;
 	case LOCALAPSTATUS_STARTED:
 		webServer.handleClient();
-		if(remoteApSuccess == REMOTEAPSUCCESS_INIT)
+		if (remoteApSuccess == REMOTEAPSUCCESS_INIT)
 			MaintainWifi();
 		if (remoteApSuccess > REMOTEAPSUCCESS_INIT && WiFi.status() == wl_status_t::WL_CONNECTED)
 		{

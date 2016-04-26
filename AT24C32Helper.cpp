@@ -83,15 +83,15 @@ void AT24C32Helper::WriteStringExact(int addr, String val, int maxLen) {
 
 
 // Read two bytes at an address as INT16
-signed short AT24C32Helper::ReadInt(int addr)
+short AT24C32Helper::ReadInt16(int addr)
 {
 	byte lowByte = i2c_eeprom_read_byte(deviceAddr, addr);
 	byte highByte = i2c_eeprom_read_byte(deviceAddr, addr+1);
 
-	return (signed short)(((lowByte << 0) & 0xFF) + ((highByte << 8) & 0xFF00));
+	return (short)(((lowByte << 0) & 0xFF) + ((highByte << 8) & 0xFF00));
 }
 // Write two bytes at an address from an INT16
-void AT24C32Helper::WriteInt(int addr, signed short value)
+void AT24C32Helper::WriteInt16(int addr, short value)
 {
 	byte lowByte = ((value >> 0) & 0xFF);
 	byte highByte = ((value >> 8) & 0xFF);
@@ -102,7 +102,7 @@ void AT24C32Helper::WriteInt(int addr, signed short value)
 	delay(2);
 }
 
-long AT24C32Helper::ReadLong(int addr)
+int AT24C32Helper::ReadInt32(int addr)
 {
 	byte b0 = i2c_eeprom_read_byte(deviceAddr, addr);
 	byte b1 = i2c_eeprom_read_byte(deviceAddr, addr + 1);
@@ -112,7 +112,7 @@ long AT24C32Helper::ReadLong(int addr)
 	return ((b0 << 0) & 0xFF) + ((b1 << 8) & 0xFF00) + ((b2 << 16) & 0xFF0000) + ((b3 << 24) & 0xFF000000);
 }
 
-void AT24C32Helper::WriteLong(int addr, long value)
+void AT24C32Helper::WriteInt32(int addr, int value)
 {
 	byte b0 = ((value >> 0) & 0xFF);
 	byte b1 = ((value >> 8) & 0xFF);
