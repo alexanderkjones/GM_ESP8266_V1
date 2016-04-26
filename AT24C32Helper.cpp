@@ -2,7 +2,7 @@
 #define EEPROM_ADDR	0x57
 
 #include "AT24C32Helper.h"
-#include <Wire\Wire.h>
+#include <Wire.h>
 
 
 boolean AT24C32Helper::begin()

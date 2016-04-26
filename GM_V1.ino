@@ -1,8 +1,11 @@
+#include <Wire.h>
 #include "AT24C32Helper.h"
 #include <TimeLib.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include "DS3231.h"
+
+void LocalApLoop();		// in apconfig.ino
 
 #define I2C_SDA 2
 #define I2C_SCL 4

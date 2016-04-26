@@ -3,7 +3,7 @@
 // 
 
 #include "DS3231.h"
-#include <Wire\Wire.h>
+#include <Wire.h>
 #include <TimeLib.h>
 
 #define REG_SEC		0x00
