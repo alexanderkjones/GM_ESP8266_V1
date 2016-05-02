@@ -60,8 +60,8 @@ public:
 	String	getDateStr(Time t, uint8_t slformat = FORMAT_LONG, uint8_t eformat = FORMAT_BIGENDIAN, char divider = '-');
 	String	getDOWStr(uint8_t format = FORMAT_LONG);
 	String	getMonthStr(uint8_t format = FORMAT_LONG);
-	int		getUnixTime(Time t);
-	Time	getTime(int unixEpoch);
+	sint32	getUnixTime(Time t);
+	Time	getTime(sint32 unixEpoch);
 	Time	getTime(String compDate, String compTime);
 
 

@@ -349,7 +349,7 @@ String DS3231::getMonthStr(uint8_t format)
 	return output;
 }
 
-int DS3231::getUnixTime(Time t)
+sint32 DS3231::getUnixTime(Time t)
 {
 	uint16_t	dc;
 
@@ -364,7 +364,7 @@ int DS3231::getUnixTime(Time t)
 
 }
 
-Time DS3231::getTime(int unixEpoch)
+Time DS3231::getTime(sint32 unixEpoch)
 {
 	Time t = Time();
 	t.year = year(unixEpoch);

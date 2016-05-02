@@ -11,11 +11,11 @@ void LocalApLoop();		// in apconfig.ino
 #define I2C_SCL 4
 #define PIN_BTN	13
 #define PIN_LED	5
-#define SEC 1000000
+#define SLEEP_SEC 1000000
 
 DS3231 rtc(I2C_SDA, I2C_SCL);
 AT24C32Helper eeprom = AT24C32Helper();
-long lLastActivity;
+sint32 lLastActivity;
 
 // the setup function runs once when you press reset or power the board
 void setup()
@@ -24,8 +24,8 @@ void setup()
 
 	rtc.begin();
 	//rtc.clearEOSC();
-	int tRtc = rtc.getUnixTime(rtc.getTime());
-	int tComp = rtc.getUnixTime(rtc.getTime(__DATE__, __TIME__));
+	sint32 tRtc = rtc.getUnixTime(rtc.getTime());
+	sint32 tComp = rtc.getUnixTime(rtc.getTime(__DATE__, __TIME__));
 	if (tComp > tRtc)
 	{
 		rtc.setDateTime(__DATE__, __TIME__);	// Set to when the compiler created the binary
@@ -57,7 +57,7 @@ void loop()
 	{
 		Serial.println("Sleeping for 5 seconds...");
 		digitalWrite(PIN_LED, LOW);
-		ESP.deepSleep(SEC * 5);
+		ESP.deepSleep(SLEEP_SEC * 5);
 	}
 	digitalWrite(PIN_LED, HIGH);
 
