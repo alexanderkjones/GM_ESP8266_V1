@@ -47,6 +47,8 @@ void setup()
 	}
 	Serial.printf("\n%s | %s\n", rtc.getDateStr().c_str(), rtc.getTimeStr().c_str());
 	eeprom.begin(I2C_SDA, I2C_SCL);
+	Serial.println(eepromSsid());
+
 }
 
 // the loop function runs over and over again until power down or reset

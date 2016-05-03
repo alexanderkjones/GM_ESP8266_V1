@@ -1,3 +1,12 @@
+#ifndef _timeandvalue
+#define _timeandvalue
+struct TimeAndValue
+{
+	sint32 Time;
+	sint32 Value;
+};
+#endif // !_timeandvalue
+
 //////////////////////////////////////////////
 //				EEPROM Storage
 //	ADDR	LEN		DESCRIPTION
@@ -20,7 +29,20 @@ void eepromLastApRssi(sint16 Rssi) { eeprom.WriteInt16(103, Rssi); }
 //	105
 
 // 1020		2		Data sample Read pointer
+sint16 eepromReadPointer() { return eeprom.ReadInt16(1020); }
+void eepromReadPointer(sint16 PacketIndex) { eeprom.WriteInt16(1020, PacketIndex); }
 // 1022		2		Data sample Write pointer
+sint16 eepromWritePointer() { return eeprom.ReadInt16(1022); }
+void eepromWritePointer(sint16 PacketIndex) { eeprom.WriteInt16(1022, PacketIndex); }
 // 1024		3072	384 Data samples; 4 byte timestamp, 4 byte value
+TimeAndValue eepromDataSample(int PacketIndex)
+{
+	return{ eeprom.ReadInt32(1024 + (PacketIndex * 8)), eeprom.ReadInt32(1024 + (PacketIndex * 8) + 4) };
+}
+void eepromDataSample(int PacketIndex, TimeAndValue Data)
+{
+	eeprom.WriteInt32(1024 + (PacketIndex * 8), Data.Time);
+	eeprom.WriteInt32(1024 + (PacketIndex * 8) + 4, Data.Value);
+}
 //////////////////////////////////////////////
 
