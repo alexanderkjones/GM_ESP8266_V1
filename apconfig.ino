@@ -114,6 +114,7 @@ void LocalApLoop()
 		if (remoteApSuccess > REMOTEAPSUCCESS_INIT && WiFi.status() == wl_status_t::WL_CONNECTED)
 		{
 			// Presumably do some internet work first
+			ExportPackets();
 			Serial.println("Disconnecting...");
 			WiFi.disconnect();
 		}

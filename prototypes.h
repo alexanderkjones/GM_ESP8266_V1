@@ -9,5 +9,7 @@ struct TimeAndValue
 };
 #endif // !_timeandvalue
 
-TimeAndValue eepromDataSample(int PacketIndex);
-void eepromDataSample(int PacketIndex, TimeAndValue Data);
+TimeAndValue eepromDataSample(uint16 PacketIndex);
+void eepromDataSample(uint16 PacketIndex, TimeAndValue Data);
+void WritePacket(TimeAndValue Data);
+TimeAndValue ReadPacket();
