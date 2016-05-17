@@ -59,8 +59,61 @@ void setup()
 	if (eepromWritePointer() == -1)
 		eepromWritePointer(0);
 
-	scale.set_scale(HX_CAL);
-	scale.set_offset(HX_ZERO);
+	scale.set_scale(eepromScaleFactor());
+	scale.set_offset(eepromZeroCal());
+}
+
+void SetHx711Zero()
+{
+	scale.set_scale();
+	scale.tare();
+
+	long zeroFactor = scale.read_average();
+	eepromZeroCal(zeroFactor);
+}
+
+int SetHx711Scale(int CalWeight)
+{
+	int steps = 0;
+	float calScale = -10.0f;
+	scale.set_scale(calScale);
+	eepromScaleFactor(calScale);
+	float weightRead = scale.get_units();
+	while (weightRead > CalWeight && steps++ < 100)
+	{
+		calScale -= 10.0f;
+		if (calScale > 0.01f || calScale < -0.01f)
+			scale.set_scale(calScale);
+		weightRead = scale.get_units();
+	}
+	while (weightRead < CalWeight && steps++ < 100)
+	{
+		calScale += 1.0f;
+		if (calScale > 0.01f || calScale < -0.01f)
+			scale.set_scale(calScale);
+		weightRead = scale.get_units(2);
+	}
+	while (weightRead > CalWeight && steps++ < 100)
+	{
+		calScale -= 0.1f;
+		if (calScale > 0.01f || calScale < -0.01f)
+			scale.set_scale(calScale);
+		weightRead = scale.get_units(4);
+	}
+	while (weightRead < CalWeight && steps++ < 100)
+	{
+		calScale += 0.01f;
+		if (calScale > 0.01f || calScale < -0.01f)
+			scale.set_scale(calScale);
+		weightRead = scale.get_units(8);
+	}
+
+	if (steps < 100)
+	{
+		eepromScaleFactor(calScale);
+		return 1;
+	}
+	return -1;
 }
 
 float scaleSampleWeight()
@@ -144,7 +197,7 @@ void TrackPour(int Delta)
 
 void UnSleepLoop()
 {
-	int thisRead = (int)(100.0f * scaleSampleWeight());
+	int thisRead = (int)scaleSampleWeight() / 10 * 10;	// truncate last digit (10s of grams)
 	int setPoint0 = eepromSetPoint0();
 	int setPoint1 = eepromSetPoint1();
 
@@ -154,7 +207,7 @@ void UnSleepLoop()
 		{
 			int delta = setPoint1 - setPoint0;
 
-			if (abs(delta) > 5)
+			if (abs(delta) > 10)
 			{
 				TrackPour(delta);
 			}

@@ -17,10 +17,89 @@ const String localPass = "Esp8266_01560E";
 
 ESP8266WebServer webServer(80);
 
+int calSuccess = 0;
+int calWeight = 0;
+#define APLOOPDO_INIT	0
+#define APLOOPDO_CALZERO	1
+#define APLOOPDO_CALSCALE	2
+int apLoopDo = APLOOPDO_INIT;
+
+void handleCalFinish()
+{
+	setTime(rtc.getUnixTime(rtc.getTime()));
+	lLastActivity = now();
+
+	Serial.println("handleCalFinish");
+
+	String content = "<html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'></head><body>";
+		content += "<h1>Calibration Finished</h1>";
+	if (calSuccess == 1)
+	{
+		content += "<p>The current weight is detected at " + String(scale.get_units(16)) + "g.</p>";
+	}
+	else
+	{
+		content += "<p>Calibration did not complete successfully.</p>";
+	}
+	content += "<h2><a href='/'>Return</a></h2></body></html>";
+
+	webServer.send(200, ((String)"text/html").c_str(), String(content));
+}
+
+void handleCalibration()
+{
+	setTime(rtc.getUnixTime(rtc.getTime()));
+	lLastActivity = now();
+
+	Serial.println("handleCalibration");
+
+	if (webServer.hasArg("zero"))
+	{
+		String content = "<html><head><meta http-equiv='refresh' content='5'><meta name='viewport' content='width=device-width, initial-scale=1.0'></head><body>";
+		content += "<p>Please wait...</p>";
+		content += "</body></html>";
+
+		webServer.send(200, ((String)"text/html").c_str(), String(content));
+		apLoopDo = APLOOPDO_CALZERO;
+		return;
+	}
+
+	if (webServer.hasArg("calWeight"))
+	{
+		String content = "";
+		content += "<html><head><meta http-equiv='refresh' content='20; url=/calfinish'><meta name='viewport' content='width=device-width, initial-scale=1.0'></head><body>";
+		content += "<p>Please wait...</p>";
+		content += "</body></html>";
+
+		webServer.send(200, ((String)"text/html").c_str(), String(content));
+		
+		calWeight = atoi(webServer.arg("calWeight").c_str());
+		apLoopDo = APLOOPDO_CALSCALE;
+		return;
+	}
+
+	String content = "<html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'></head><body>";
+	content +="<h1>Calibration Settings</h1>";
+
+	content += "<p>1) Select this button to Zero your scale </p>";
+	content += "<form action='/calibration' method='POST'><input type='hidden' name='zero' value='" + String(eepromZeroCal()) + "'>";
+	content += "<input type='submit' value='Zero Calibration Weight'></form>";
+
+	content += "<p>2) Add a known weight on top of your scale</p>";
+	content += "<p>3) Enter the weight in grams of your calibration weight</p>";
+	content += "<form action='/calibration' method='POST'>Calibration Weight Value (g): <input type='number' name='calWeight' min='1' max='100000'>";
+	content += "<p>4) Confirm</p>";
+	content += "<input type='submit' value='Calibrate and Confirm'></form>";
+	content += "</body></html>";
+
+	webServer.send(200, ((String)"text/html").c_str(), String(content));
+}
 void handleRoot()
 {
 	setTime(rtc.getUnixTime(rtc.getTime()));
 	lLastActivity = now();
+
+	Serial.println("handleRoot");
 
 	if (webServer.hasArg("SSID") && webServer.hasArg("PASS"))
 	{
@@ -28,7 +107,7 @@ void handleRoot()
 		if (webServer.arg("SSID") == "")
 		{
 			eepromAutoConnect("0");
-			content += "<html><head><meta http-equiv='refresh' content='1'> </head><body>";
+			content += "<html><head><meta http-equiv='refresh' content='1<meta name='viewport' content='width=device-width, initial-scale=1.0'></head><body>";
 			content += "<p>Please wait...</p>";
 			content += "</body></html>";
 
@@ -39,7 +118,7 @@ void handleRoot()
 		eepromAutoConnect("1");
 		eepromSsid(webServer.arg("SSID"));
 		eepromPass(webServer.arg("PASS"));
-		content += "<html><head><meta http-equiv='refresh' content='30'> </head><body>";
+		content += "<html><head><meta http-equiv='refresh' content='30'><meta name='viewport' content='width=device-width, initial-scale=1.0'></head><body>";
 		content += "<p>Connecting to SSID: " + eepromSsid() + ". <br>Please wait...</p>";
 		content += "</body></html>";
 
@@ -61,7 +140,8 @@ void handleRoot()
 	if (rssi > -50)
 		rssiQuality = "Excellent";
 
-	String content = "<h1>Your Wifi Settings</h1>";
+	String content = "<html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'></head><body>";
+	content += "<h1>Your Wifi Settings</h1>";
 
 	if (eepromAutoConnect() == "1")
 	{
@@ -87,6 +167,9 @@ void handleRoot()
 	content += "<form action='/' method='POST'>Router Name: <br><input type='text' name='SSID'><br>";
 	content += "Password: <br><input type='text' name='PASS'><br>";
 	content += "<input type = 'submit' value='Save'></form>";
+	
+	content += "<h2><a href='/calibration'>Calibrate Scale</a></h2>";
+	content += "</body></html>";
 
 	webServer.send(200, ((String)"text/html").c_str(), String(content));
 }
@@ -100,6 +183,8 @@ void LocalApLoop()
 		WiFi.softAP(localSsid.c_str(), localPass.c_str());
 		Serial.println("Local AP IP: " + WiFi.softAPIP().toString());
 		webServer.on("/", handleRoot);
+		webServer.on("/calibration", handleCalibration);
+		webServer.on("/calfinish", handleCalFinish);
 		webServer.begin();
 		Serial.println("Web server started...");
 		localApStatus = LOCALAPSTATUS_STARTED;
@@ -128,6 +213,18 @@ void LocalApLoop()
 		break;
 	}
 
+	switch (apLoopDo)
+	{
+	case APLOOPDO_CALZERO:
+		apLoopDo = APLOOPDO_INIT;
+		SetHx711Zero();
+		break;
+	case APLOOPDO_CALSCALE:
+		apLoopDo = APLOOPDO_INIT;
+		calSuccess = SetHx711Scale(calWeight);
+		break;
+
+	}
 }
 
 void MaintainWifi()

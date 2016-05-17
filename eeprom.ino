@@ -30,7 +30,15 @@ void eepromLastApRssi(sint16 Rssi) { eeprom.WriteInt16(103, Rssi); }
 sint16 eepromSetPoint0() { return eeprom.ReadInt16(105); }
 void eepromSetPoint0(sint16 Weight) { eeprom.WriteInt16(105, Weight); }
 //	107		2		SetPoint1 * 100
-//	109
+sint16 eepromSetPoint1() { return eeprom.ReadInt16(107); }
+void eepromSetPoint1(sint16 Weight) { eeprom.WriteInt16(107, Weight); }
+//	109		4		HX711 Zero Calibration
+sint32 eepromZeroCal() { return eeprom.ReadInt32(109); }
+void eepromZeroCal(sint32 ZeroCalVal) { eeprom.WriteInt32(109, ZeroCalVal); }
+//	113		4		HZ711 Scale Factor
+sint32 eepromScaleFactor() { return eeprom.ReadInt32(113); }
+void eepromScaleFactor(sint32 ScaleFactor) { eeprom.WriteInt32(113, ScaleFactor); }
+//	117
 
 //	1020	2		Data sample Read pointer
 sint16 eepromReadPointer() { return eeprom.ReadInt16(1020); }

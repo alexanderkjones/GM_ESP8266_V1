@@ -9,7 +9,9 @@ struct TimeAndValue
 };
 #endif // !_timeandvalue
 
+#ifndef _VSARDUINO_H_
 TimeAndValue eepromDataSample(uint16 PacketIndex);
 void eepromDataSample(uint16 PacketIndex, TimeAndValue Data);
 void WritePacket(TimeAndValue Data);
 TimeAndValue ReadPacket();
+#endif
