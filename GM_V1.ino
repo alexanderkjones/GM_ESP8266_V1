@@ -1,3 +1,4 @@
+#include <ESP8266HTTPClient.h>
 #include <HX711.h>
 #include <Wire.h>
 #include "AT24C32Helper.h"
@@ -13,9 +14,9 @@
 #define PIN_LED	5
 #define HX_DOUT	14
 #define HX_SCK	12
-#define HX_CAL	-19100
-#define HX_ZERO	8433324
 #define SLEEP_SEC 1000000
+#define DATA_HOST	"api.pushingbox.com"
+#define DATA_DEVID	"v8C0805331DE2F9D";
 
 DS3231 rtc(I2C_SDA, I2C_SCL);
 AT24C32Helper eeprom = AT24C32Helper();
@@ -45,7 +46,7 @@ void setup()
 
 	if (digitalRead(PIN_BTN))
 	{
-		lLastActivity = 0l;
+		lLastActivity = now() - 91;
 	}
 	else
 	{
@@ -174,6 +175,34 @@ TimeAndValue ReadPacket()
 	return{ 0, 0 };
 }
 
+int SendData(TimeAndValue Data)
+{
+	String url = "/pushingbox";
+	url += "?devid=" DATA_DEVID;
+	url += "&delta=" + String(Data.Value);
+	url += "&scaleid=" + WiFi.macAddress();
+
+	HTTPClient client;
+	Serial.print("HTTP begin... ");
+	client.begin(DATA_HOST, 80, url);
+	Serial.print("get... ");
+	int httpStatus = client.GET();
+	Serial.println(String(httpStatus) + "... ");
+
+	if (httpStatus > 0)
+	{
+		String response = client.getString();
+		Serial.println("=======================");
+		Serial.println(response);
+		Serial.println("=======================");
+	}
+	else
+	{
+		Serial.printf("httpStatus is negative: %d - %s\n", httpStatus, client.errorToString(httpStatus).c_str());
+	}
+	return httpStatus;
+}
+
 void ExportPackets()
 {
 	int unread = GetPacketsUnread();
@@ -184,6 +213,7 @@ void ExportPackets()
 	{
 		TimeAndValue data = ReadPacket();
 		Serial.printf("%s %s = %d\n", rtc.getDateStr(rtc.getTime(data.Time)).c_str(), rtc.getTimeStr(rtc.getTime(data.Time)).c_str(), data.Value);
+		SendData(data);
 	}
 	Serial.println("Done.");
 }
@@ -226,7 +256,7 @@ void loop()
 	if (now() - lLastActivity > 90)
 	{
 		int unread = GetPacketsUnread();
-		if (unread < 200)
+		if (unread < 1)	// If unread packets exceed X, start up WiFi and export
 		{
 			// Code that runs every 5 seconds at most
 			UnSleepLoop();
