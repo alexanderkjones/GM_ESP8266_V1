@@ -12,7 +12,7 @@ int remoteApSuccess = REMOTEAPSUCCESS_INIT;
 #define LOCALAPSTATUS_MAINTAIN	2
 int localApStatus = LOCALAPSTATUS_INIT;
 
-const String localSsid = "ESP_01560E";
+const String localSsid = "ESP_01560E_" __TIME__;
 const String localPass = "Esp8266_01560E";
 
 ESP8266WebServer webServer(80);
@@ -107,7 +107,7 @@ void handleRoot()
 		if (webServer.arg("SSID") == "")
 		{
 			eepromAutoConnect("0");
-			content += "<html><head><meta http-equiv='refresh' content='1<meta name='viewport' content='width=device-width, initial-scale=1.0'></head><body>";
+			content += "<html><head><meta http-equiv='refresh' content='1'><meta name='viewport' content='width=device-width, initial-scale=1.0'></head><body>";
 			content += "<p>Please wait...</p>";
 			content += "</body></html>";
 

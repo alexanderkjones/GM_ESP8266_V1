@@ -29,7 +29,7 @@ void setup()
 	Serial.begin(9600);
 
 	rtc.begin();
-	//rtc.clearEOSC();
+	rtc.clearEOSC();
 	sint32 tRtc = rtc.getUnixTime(rtc.getTime());
 	sint32 tComp = rtc.getUnixTime(rtc.getTime(__DATE__, __TIME__));
 	if (tComp > tRtc)
@@ -69,8 +69,12 @@ void SetHx711Zero()
 	scale.set_scale();
 	scale.tare();
 
+	delay(5);
 	long zeroFactor = scale.read_average();
+	delay(5);
 	eepromZeroCal(zeroFactor);
+	Serial.print("zeroFactor = ");
+	Serial.println(zeroFactor);
 }
 
 int SetHx711Scale(int CalWeight)
@@ -80,37 +84,61 @@ int SetHx711Scale(int CalWeight)
 	scale.set_scale(calScale);
 	eepromScaleFactor(calScale);
 	float weightRead = scale.get_units();
+	Serial.print("weightRead = ");
+	Serial.println(weightRead);
 	while (weightRead > CalWeight && steps++ < 100)
 	{
 		calScale -= 10.0f;
 		if (calScale > 0.01f || calScale < -0.01f)
 			scale.set_scale(calScale);
+		//wdt_reset();
 		weightRead = scale.get_units();
+		//wdt_reset();
+		delay(5);
+		Serial.print("weightRead = ");
+		Serial.println(weightRead);
 	}
 	while (weightRead < CalWeight && steps++ < 100)
 	{
 		calScale += 1.0f;
 		if (calScale > 0.01f || calScale < -0.01f)
 			scale.set_scale(calScale);
+		//wdt_reset();
 		weightRead = scale.get_units(2);
+		//wdt_reset();
+		delay(5);
+		Serial.print("weightRead = ");
+		Serial.println(weightRead);
 	}
 	while (weightRead > CalWeight && steps++ < 100)
 	{
 		calScale -= 0.1f;
 		if (calScale > 0.01f || calScale < -0.01f)
 			scale.set_scale(calScale);
+		//wdt_reset();
 		weightRead = scale.get_units(4);
+		//wdt_reset();
+		delay(5);
+		Serial.print("weightRead = ");
+		Serial.println(weightRead);
 	}
 	while (weightRead < CalWeight && steps++ < 100)
 	{
 		calScale += 0.01f;
 		if (calScale > 0.01f || calScale < -0.01f)
 			scale.set_scale(calScale);
+		//wdt_reset();
 		weightRead = scale.get_units(8);
+		//wdt_reset();
+		delay(5);
+		Serial.print("weightRead = ");
+		Serial.println(weightRead);
 	}
 
 	if (steps < 100)
 	{
+		Serial.print("calScale = ");
+		Serial.println(calScale);
 		eepromScaleFactor(calScale);
 		return 1;
 	}
@@ -126,8 +154,9 @@ float scaleSampleWeight()
 		delay(1);
 		w++;
 	}
+	delay(5);
 	float sample = scale.get_units(25);
-
+	delay(5);
 	scale.power_down();
 	return sample;
 }
